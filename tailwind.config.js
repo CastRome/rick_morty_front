@@ -14,6 +14,10 @@ export default {
       ...defaultTheme.screens,
     },
     extend: {
+      height: {
+        18.5: "74px",
+        18.75: "75px",
+      },
       fontSize: {
         "title-2xl": ["72px", "90px"],
         "title-xl": ["60px", "72px"],
@@ -29,6 +33,14 @@ export default {
         transparent: "transparent",
         white: "#FFFFFF",
         black: "#101828",
+        primary: {
+          100: "#EEE3FF",
+          600: "#8054C7",
+          700: "#5A3696",
+        },
+        secondary: {
+          600: "#63D838",
+        },
         brand: {
           25: "#F2F7FF",
           50: "#ECF3FF",
@@ -65,7 +77,7 @@ export default {
           200: "#E4E7EC",
           300: "#D0D5DD",
           400: "#98A2B3",
-          500: "#667085",
+          500: "#6B7280",
           600: "#475467",
           700: "#344054",
           800: "#1D2939",

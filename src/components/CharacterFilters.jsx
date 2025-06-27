@@ -1,4 +1,6 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { Search, SlidersHorizontal, ChevronLeft } from "lucide-react";
+import OptionGroup from "./OptionGroup";
 
 const STATUS_OPTIONS = [
   { value: "", label: "All Status" },
@@ -22,155 +24,191 @@ const SORT_OPTIONS = [
   { value: "DESC", label: "Z-A" },
 ];
 
-function CharacterFilter({ onChange }) {
+function CharacterFilter({ onChange, totalResults = 0, filteredResults = 0 }) {
+  const [query, setQuery] = useState("");
   const [filters, setFilters] = useState({
     status: "",
     species: "",
     gender: "",
     origin: "",
     sort: "ASC",
-    sortBy: "name",
   });
+  const [showFilters, setShowFilters] = useState(false);
 
-  function handleChange(e) {
-    const { name, value } = e.target;
-    const updated = { ...filters, [name]: value };
-    setFilters(updated);
-    onChange(updated);
+  const isFiltering =
+    filters.status ||
+    filters.species ||
+    filters.gender ||
+    filters.origin.trim() !== "" ||
+    filters.sort !== "ASC" ||
+    query.trim() !== "";
+
+  function applyFilters() {
+    const newFilters = { ...filters, query: query.trim() };
+    onChange(newFilters);
+    setShowFilters(false);
+  }
+
+  function resetFilters() {
+    const emptyFilters = {
+      status: "",
+      species: "",
+      gender: "",
+      origin: "",
+      sort: "ASC",
+    };
+    setFilters(emptyFilters);
+    setQuery("");
+    onChange({});
+    setShowFilters(false);
+  }
+
+  function handleFilterChange(name, value) {
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  }
+
+  function handleOriginChange(e) {
+    const { value } = e.target;
+    setFilters((prev) => ({ ...prev, origin: value }));
+  }
+
+  function handleQueryChange(e) {
+    const value = e.target.value;
+    setQuery(value);
+    // Call onChange with current filters and new query for live search
+    onChange({ ...filters, query: value.trim() });
   }
 
   return (
-    <form
-      className="flex flex-wrap gap-4 mb-6 items-end"
-      onSubmit={(e) => e.preventDefault()}
-      aria-label="Character filters"
-    >
-      <div className="flex flex-col">
-        <label
-          htmlFor="status"
-          className="mb-1 text-sm font-medium"
-        >
-          Status
-        </label>
-        <div className="relative">
-          <select
-            id="status"
-            name="status"
-            value={filters.status}
-            onChange={handleChange}
-            className="border rounded px-3 pr-8 py-2 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
-          >
-            {STATUS_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-            ▼
-          </span>
-        </div>
-      </div>
-
-      <div className="flex flex-col">
-        <label
-          htmlFor="species"
-          className="mb-1 text-sm font-medium"
-        >
-          Species
-        </label>
-        <div className="relative">
-          <select
-            id="species"
-            name="species"
-            value={filters.species}
-            onChange={handleChange}
-            className="border rounded px-3 pr-8 py-2 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
-          >
-            {SPECIES_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-            ▼
-          </span>
-        </div>
-      </div>
-
-      <div className="flex flex-col">
-        <label
-          htmlFor="gender"
-          className="mb-1 text-sm font-medium"
-        >
-          Gender
-        </label>
-        <div className="relative">
-          <select
-            id="gender"
-            name="gender"
-            value={filters.gender}
-            onChange={handleChange}
-            className="border rounded px-3 pr-8 py-2 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
-          >
-            {GENDER_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-            ▼
-          </span>
-        </div>
-      </div>
-
-      <div className="flex flex-col">
-        <label
-          htmlFor="origin"
-          className="mb-1 text-sm font-medium"
-        >
-          Origin
-        </label>
+    <div className="w-full">
+      <div className="relative w-full flex items-center border rounded px-3 py-2 bg-gray-100">
+        <Search className="w-4 h-4 text-gray-400 mr-2" />
         <input
-          id="origin"
           type="text"
-          name="origin"
-          placeholder="Filter by Origin"
-          value={filters.origin}
-          onChange={handleChange}
-          className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Search or filter results"
+          className="flex-1 border-0 bg-gray-100"
+          value={query}
+          onChange={handleQueryChange}
+          aria-label="Search characters"
         />
+        <button
+          className="ml-2"
+          onClick={() => setShowFilters(!showFilters)}
+          aria-label="Show filters"
+          type="button"
+        >
+          <SlidersHorizontal
+            className={`w-5 h-5 text-primary-600 ${
+              showFilters ? "bg-primary-100" : "bg-gray-200"
+            }`}
+          />
+        </button>
       </div>
 
-      <div className="flex flex-col">
-        <label
-          htmlFor="sort"
-          className="mb-1 text-sm font-medium"
-        >
-          Sort
-        </label>
-        <div className="relative">
-          <select
-            id="sort"
-            name="sort"
-            value={filters.sort}
-            onChange={handleChange}
-            className="border rounded px-3 pr-8 py-2 appearance-none focus:outline-none focus:ring-2 focus:ring-blue-400 w-full"
+      {/* Show results and Done button if there are active filters */}
+      {isFiltering && (
+        <div className="mt-2 px-2 text-sm text-gray-600 flex flex-col md:flex-row md:items-center md:justify-between gap-1">
+          <button
+            onClick={resetFilters}
+            className="text-primary-600 underline hover:text-primary-800 font-semibold"
+            type="button"
           >
-            {SORT_OPTIONS.map((opt) => (
-              <option key={opt.value} value={opt.value}>
-                {opt.label}
-              </option>
-            ))}
-          </select>
-          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
-            ▼
-          </span>
+            Done
+          </button>
         </div>
-      </div>
-    </form>
+      )}
+
+      {showFilters && (
+        <>
+          {/* Mobile modal background */}
+          <div
+            className="fixed inset-0 bg-black bg-opacity-40 z-40 md:hidden"
+            onClick={() => setShowFilters(false)}
+            aria-hidden="true"
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="fixed inset-0 bg-white z-50 p-4 overflow-auto md:static md:bg-transparent md:p-0 md:overflow-visible md:max-w-[375px]"
+          >
+            {/* Mobile header with Back button */}
+            <div className="flex items-center mb-4 md:hidden">
+              <button
+                onClick={() => setShowFilters(false)}
+                aria-label="Close filters"
+                className="flex items-center text-blue-600 font-semibold"
+                type="button"
+              >
+                <ChevronLeft className="w-5 h-5 mr-1" color="#8054C7" />
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-6">
+              <OptionGroup
+                label="Status"
+                name="status"
+                options={STATUS_OPTIONS}
+                selectedValue={filters.status}
+                onChange={handleFilterChange}
+              />
+              <OptionGroup
+                label="Species"
+                name="species"
+                options={SPECIES_OPTIONS}
+                selectedValue={filters.species}
+                onChange={handleFilterChange}
+              />
+              <OptionGroup
+                label="Gender"
+                name="gender"
+                options={GENDER_OPTIONS}
+                selectedValue={filters.gender}
+                onChange={handleFilterChange}
+              />
+              <div className="flex flex-col md:max-w-[375px]">
+                <label
+                  htmlFor="origin"
+                  className="mb-2 text-sm font-medium text-gray-500"
+                >
+                  Origin
+                </label>
+                <input
+                  id="origin"
+                  type="text"
+                  name="origin"
+                  placeholder="Filter by Origin"
+                  value={filters.origin}
+                  onChange={handleOriginChange}
+                  className="border rounded px-3 py-2 focus:outline-none"
+                />
+              </div>
+              <OptionGroup
+                label="Sort"
+                name="sort"
+                options={SORT_OPTIONS}
+                selectedValue={filters.sort}
+                onChange={handleFilterChange}
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                onClick={applyFilters}
+                disabled={!isFiltering}
+                type="button"
+                className={`px-4 w-full py-2 rounded font-medium transition-colors ${
+                  isFiltering
+                    ? "bg-primary-600 hover:bg-primary-700 text-white"
+                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                Filter
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 

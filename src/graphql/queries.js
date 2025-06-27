@@ -29,6 +29,7 @@ export const GET_CHARACTERS = gql`
       species
       gender
       origin
+      occupation
     }
   }
 `;
